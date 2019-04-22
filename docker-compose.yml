@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  db:
+    container_name: massdrop_challenge_mongo-db
+    image: mongo
+    restart: always
+    # ports:
+    #   - 27017:27017
+    volumes:
+      - data-volume:/data/db
+
+  api:
+    container_name: massdrop_challenge_api
+    build:
+      context: ./api
+    depends_on:
+      - db
+    environment:
+      PORT: 3001
+      DEFAULT_CONNECTION_STRING: "mongodb://massdrop_challenge_mongo-db:27017/massdrop_challenge"
+    volumes:
+      - ./api:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3001:3001
+    command: yarn start
+
+  frontend:
+    container_name: massdrop_challenge_frontend
+    build:
+      context: ./frontend
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+    command: yarn start
+
+volumes:
+  data-volume:
